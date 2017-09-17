@@ -75,7 +75,8 @@ def save_to_file():
     s = raw_input("Nombre archivo: ")
     with open(s, "w") as f:
         f.write("RUT,Nombre,Nota\n")
-        for entry in entries:
+        sort_entries = sorted(entries, key=lambda x: x.split(",")[1])
+        for entry in sort_entries:
             f.write(entry)
 
 
