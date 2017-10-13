@@ -13,12 +13,12 @@ if __name__ == '__main__':
             for linea in f:
                 comps = linea.replace("\"", "").split(",")
                 if comps[0].isdigit():
-                    rut = comps[3]
+                    rut = comps[3][:-2]
                     apellido = comps[1].split(" ")[0]
                     nombre = comps[2].split(" ")[1]
-                    entries.append(rut+","+nombre+" "+apellido+"\n")
+                    entries.append(rut+","+nombre+" "+apellido+","+comps[0]+"\n")
 
-        with open("alumnos.txt","w") as f:
+        with open("alumnos.txt", "w") as f:
             for entry in entries:
                 f.write(entry)
         print "Guardado."

@@ -1,3 +1,4 @@
+import sys
 from record import record_and_transcript
 
 alumnos = []
@@ -9,8 +10,9 @@ def get_alumnos():
         for linea in f:
             comps = linea.split(",")
             alumnos.append({
-                "nombre": comps[1][:-1],
-                "rut": comps[0]
+                "nombre": comps[1],
+                "rut": comps[0],
+                "num": comps[2][:-1]
             })
 
 
@@ -53,40 +55,62 @@ def expected_nota(text):
 def divide_alum_nota(text):
     words = text.split(" ")
     alum = ""
-    nota = ""
+    nota = []
     for word in words:
         if word.isalpha():
             alum += word + " "
         elif word.isdigit():
-            nota += word
+            nota.append(word)
     return alum.strip(), nota
 
 
-def register(text):
+def register(text, n=1):
     text_alum, text_nota = divide_alum_nota(text)
-    enota = expected_nota(text_nota)
+    enotas = []
+    for i in range(n):
+        if i < len(text_nota):
+            enotas.append(expected_nota(text_nota[i]))
+        else:
+            enotas.append(-1)
     ealum = expected_alumno(text_alum)
-    row = ealum["rut"] + "," + ealum["nombre"] + "," + str(enota)
-    print "Registro:" + row.replace(",", "\t")
-    entries.append(row + "\n")
+    row = ealum["num"] + "," + ealum["rut"] + "," + ealum["nombre"] + "," + ",".join(map(str, enotas))
+    print "Registro: " + row.replace(",", "\t")
+    entries.append(row)
 
 
-def save_to_file():
-    s = raw_input("Nombre archivo: ")
+def save_to_file(n=1):
+    s = raw_input("Nombre archivo: ") + ".csv"
     with open(s, "w") as f:
-        f.write("RUT,Nombre,Nota\n")
-        sort_entries = sorted(entries, key=lambda x: x.split(",")[1])
-        for entry in sort_entries:
-            f.write(entry)
+        f.write("N,RUT,Nombre," + ",".join(map(lambda e: "P" + str(e+1), range(n))) + "\n")
+        emap = {}
+        for entry in entries:
+            num = entry.split(",")[0]
+            emap[num] = ",".join(entry.split(",")[3:])
+
+        for alum in alumnos:
+            row = alum["num"] + "," + alum["rut"] + "," + alum["nombre"] + ","
+            if alum["num"] in emap:
+                row = row + emap[alum["num"]]
+            f.write(row + "\n")
+        f.write("\n")
 
 
 if __name__ == '__main__':
+    # PARAMETERS
+    N = int(sys.argv[sys.argv.index("-n") + 1]) if "-n" in sys.argv else 1
+    textual = "-t" in sys.argv
+    verbose = "-v" in sys.argv
+
+    # PROGRAM
     print "\t\taudioRev"
     get_alumnos()
     s = raw_input("Ingresar otra: [si]/no: ")
     while s != "no":
-        text = record_and_transcript()
-        register(text)
+        if not textual:
+            text = record_and_transcript(verbose=verbose)
+        else:
+            text = raw_input(">> ")
+        register(text, n=N)
         s = raw_input("Ingresar otra: [si]/no: ")
-    save_to_file()
+    save_to_file(n=N)
     print "Guardado."
