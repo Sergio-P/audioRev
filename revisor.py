@@ -44,12 +44,15 @@ def expected_alumno(text):
     return min_alum
 
 
-def expected_nota(text):
+def expected_nota(text, raw=False):
     if len(text) == 0 or len(text) >= 3:
         return -1
-    if len(text) == 1:
-        text += "0"
-    return int(text) / 10.0
+    if raw:
+        return int(text)
+    else:
+        if len(text) == 1:
+            text += "0"
+        return int(text) / 10.0
 
 
 def divide_alum_nota(text):
@@ -64,12 +67,12 @@ def divide_alum_nota(text):
     return alum.strip(), nota
 
 
-def register(text, n=1):
+def register(text, n=1, raw=False):
     text_alum, text_nota = divide_alum_nota(text)
     enotas = []
     for i in range(n):
         if i < len(text_nota):
-            enotas.append(expected_nota(text_nota[i]))
+            enotas.append(expected_nota(text_nota[i], raw=raw))
         else:
             enotas.append(-1)
     ealum = expected_alumno(text_alum)
@@ -100,6 +103,7 @@ if __name__ == '__main__':
     N = int(sys.argv[sys.argv.index("-n") + 1]) if "-n" in sys.argv else 1
     textual = "-t" in sys.argv
     verbose = "-v" in sys.argv
+    raw = "-r" in sys.argv
 
     # PROGRAM
     print "\t\taudioRev"
@@ -110,7 +114,7 @@ if __name__ == '__main__':
             text = record_and_transcript(verbose=verbose)
         else:
             text = raw_input(">> ")
-        register(text, n=N)
+        register(text, n=N, raw=raw)
         s = raw_input("Ingresar otra: [si]/no: ")
     save_to_file(n=N)
     print "Guardado."
